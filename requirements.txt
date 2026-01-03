@@ -1,1 +1,11 @@
-
+edge-tts
+gTTS
+TTS
+langid
+shutil
+# Chatterbox की पुरानी लाइब्रेरीज़ भी रहने दें
+resemble-perth
+s3tokenizer
+omegaconf
+pydub
+gradio
