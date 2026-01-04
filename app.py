@@ -1,118 +1,95 @@
-import os
-import sys
-
-# फोल्डर पाथ सेट करना (ताकि कोई एरर न आए)
-base_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_path, 'src'))
-
-# अब यहाँ अपना Chatterbox वाला कोड पेस्ट करें...
-
-import os
-import torch
 import gradio as gr
-import edge_tts
+import torch
+from TTS.api import TTS
 import asyncio
-import tempfile
-import numpy as np
+import edge_tts
+import os
 import librosa
-from pathlib import Path
+import soundfile as sf
+import numpy as np
 
-# आपके द्वारा बनाए गए मॉड्यूल्स को इम्पोर्ट करना
-from voicebatchstudio.tts import ChatterboxTTS
-from voicebatchstudio.vc import ChatterboxVC
-from voicebatchstudio.mtl_tts import ChatterboxMTL
+# डिवाइस सेटअप (GPU है तो बहुत तेज़ चलेगा)
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# --- कॉन्फ़िगरेशन ---
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-OUTPUT_DIR = "outputs"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# XTTS v2 मॉडल लोड करना
+print('📥 Loading Realistic XTTS v2 Model...')
+try:
+    tts = TTS('tts_models/multilingual/multi-dataset/xtts_v2').to(device)
+except Exception as e:
+    print(f"Model loading error: {e}")
 
-# मॉडल लोड करना
-print(f"Loading Models on {DEVICE}...")
-tts_engine = ChatterboxTTS.from_pretrained(device=DEVICE)
-vc_engine = ChatterboxVC.from_pretrained(device=DEVICE)
+# ऑडियो क्लीनअप और साइलेंस रिमूवर फंक्शन
+def cleanup_audio(audio_path, remove_silence=True):
+    y, sr = librosa.load(audio_path)
+    
+    if remove_silence:
+        # शांत हिस्सों को हटाना (Silence Remover)
+        y, _ = librosa.effects.trim(y, top_db=20)
+    
+    # नॉर्मलाइज़ेशन (आवाज़ को साफ़ और बैलेंस्ड करना)
+    y = librosa.util.normalize(y)
+    
+    clean_path = "cleaned_output.wav"
+    sf.write(clean_path, y, sr)
+    return clean_path
 
-# --- फ्री मॉडल्स (TTS 5) फ़ंक्शंस ---
+# Standard TTS (Edge-TTS) - तेज़ जनरेशन के लिए
+async def fast_tts(text, voice, speed, pitch):
+    output = 'fast_voice.mp3'
+    # Speed और Pitch को फॉर्मेट करना (+10% या -10%)
+    rate = f"{speed:+}%"
+    p = f"{pitch:+}Hz"
+    
+    communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=p)
+    await communicate.save(output)
+    return output
 
-async def generate_edge_tts(text, voice="hi-IN-MadhurNeural"):
-    """Microsoft Edge TTS (Free & High Quality Hindi)"""
-    communicate = edge_tts.Communicate(text, voice)
-    path = os.path.join(OUTPUT_DIR, "edge_out.mp3")
-    await communicate.save(path)
-    return path
+# Voice Cloning (XTTS) - असली जैसी आवाज़ के लिए
+def clone_voice(text, audio_sample, cleanup):
+    output_path = 'cloned_voice.wav'
+    # क्लोनिंग प्रोसेस
+    tts.tts_to_file(text=text, speaker_wav=audio_sample, language='hi', file_path=output_path)
+    
+    # अगर यूजर ने क्लीनअप चुना है
+    if cleanup:
+        output_path = cleanup_audio(output_path)
+        
+    return output_path
 
-def clone_voice(text, ref_audio, speed):
-    """Chatterbox Turbo Cloning"""
-    if ref_audio is None:
-        return None
-    # ऑडियो जनरेट करें
-    wav = tts_engine.generate(text, ref_audio, speed=speed)
-    path = os.path.join(OUTPUT_DIR, "clone_out.wav")
-    import soundfile as sf
-    sf.write(path, wav.squeeze().cpu().numpy(), 24000)
-    return path
-
-def convert_voice(source_audio, target_audio):
-    """Voice Conversion (आवाज़ बदलें)"""
-    if source_audio is None or target_audio is None:
-        return None
-    wav = vc_engine.generate(source_audio, target_voice_path=target_audio)
-    path = os.path.join(OUTPUT_DIR, "vc_out.wav")
-    import soundfile as sf
-    sf.write(path, wav.squeeze().cpu().numpy(), 24000)
-    return path
-
-# --- Gradio UI डिज़ाइन ---
-
-with gr.Blocks(theme=gr.themes.Soft()) as demo:
-    gr.Markdown("# 🎙️ VoiceBatch Studio (Free AI Voice)")
-    gr.Markdown("### सब कुछ फ्री, हमेशा के लिए। (हिंदी और इंग्लिश सपोर्ट)")
-
+# UI (Gradio) इंटरफेस
+with gr.Blocks(theme=gr.themes.Soft(primary_hue="orange")) as demo:
+    gr.Markdown('# 🎙️ VoiceBatch Studio v2.0.1 - Realistic Edition')
+    gr.Markdown('### *High-Pitch, Low-Speed, Silence Remover & Realistic Cloning*')
+    
     with gr.Tabs():
-        # टैब 1: सुपरफास्ट क्लोनिंग
-        with gr.TabItem("🚀 Turbo Cloning"):
+        # टैब 1: प्रोफेशनल क्लोनिंग
+        with gr.TabItem('🧬 Voice Cloning (Premium)'):
             with gr.Row():
                 with gr.Column():
-                    text_input = gr.Textbox(label="टेक्स्ट लिखें", placeholder="यहाँ कुछ लिखें...", lines=3)
-                    ref_audio = gr.Audio(label="अपनी आवाज़ अपलोड करें (5-10 सेकंड)", type="filepath")
-                    speed = gr.Slider(0.5, 2.0, value=1.0, label="बोलने की रफ़्तार (Speed)")
-                    btn_tts = gr.Button("Generate Clone", variant="primary")
-                with gr.Column():
-                    audio_output = gr.Audio(label="AI की आवाज़")
-
-            btn_tts.click(clone_voice, inputs=[text_input, ref_audio, speed], outputs=audio_output)
-
-        # टैब 2: फ्री हिंदी आवाज़ें (TTS 5)
-        with gr.TabItem("🇮🇳 Free Hindi (Edge-TTS)"):
-            with gr.Row():
-                with gr.Column():
-                    hi_text = gr.Textbox(label="हिंदी टेक्स्ट", value="नमस्ते, आप कैसे हैं?")
-                    hi_voice = gr.Dropdown(
-                        choices=["hi-IN-MadhurNeural", "hi-IN-SwaraNeural", "en-IN-PrabhatNeural"], 
-                        value="hi-IN-MadhurNeural", 
-                        label="आवाज़ चुनें"
-                    )
-                    btn_edge = gr.Button("Generate Hindi Audio")
-                with gr.Column():
-                    hi_output = gr.Audio(label="Output")
+                    input_text = gr.Textbox(label='यहाँ टेक्स्ट लिखें (Hindi/English)', lines=5)
+                    sample = gr.Audio(label='वॉइस सैंपल अपलोड करें (5-10 सेकंड)', type='filepath')
+                    use_cleanup = gr.Checkbox(label="Audio Cleanup & Silence Remover", value=True)
+                    btn_clone = gr.Button('Clone & Enhance 🚀', variant='primary')
+                output_clone = gr.Audio(label='Realistic क्लोन किया हुआ ऑडियो')
             
-            btn_edge.click(lambda t, v: asyncio.run(generate_edge_tts(t, v)), inputs=[hi_text, hi_voice], outputs=hi_output)
-
-        # टैब 3: आवाज़ बदलें (Voice Changer)
-        with gr.TabItem("🔄 Voice Changer"):
+            btn_clone.click(clone_voice, [input_text, sample, use_cleanup], output_clone)
+            
+        # टैब 2: तेज़ जनरेशन (Edge-TTS)
+        with gr.TabItem('⚡ Ultra-Fast Generation'):
             with gr.Row():
                 with gr.Column():
-                    src_aud = gr.Audio(label="जिसकी आवाज़ बदलनी है (File/Record)", type="filepath")
-                    tgt_aud = gr.Audio(label="जिसके जैसा बनाना है (Target)", type="filepath")
-                    btn_vc = gr.Button("Convert Voice")
-                with gr.Column():
-                    vc_output = gr.Audio(label="Converted Audio")
+                    t_text = gr.Textbox(label='टेक्स्ट लिखें', lines=5)
+                    v_drop = gr.Dropdown(choices=['hi-IN-MadhurNeural', 'hi-IN-SwaraNeural', 'en-US-GuyNeural'], label='आवाज़ चुनें', value='hi-IN-MadhurNeural')
+                    with gr.Row():
+                        spd_slider = gr.Slider(minimum=-50, maximum=50, value=0, label="Speed (%)")
+                        ptc_slider = gr.Slider(minimum=-20, maximum=20, value=0, label="Pitch (Hz)")
+                    btn_fast = gr.Button('Generate Fast ⚡')
+                output_fast = gr.Audio(label='साफ़ और तेज़ ऑडियो')
             
-            btn_vc.click(convert_voice, inputs=[src_aud, tgt_aud], outputs=vc_output)
+            btn_fast.click(lambda t, v, s, p: asyncio.run(fast_tts(t, v, s, p)), [t_text, v_drop, spd_slider, ptc_slider], output_fast)
 
-    gr.Markdown("---")
-    gr.Markdown("Built with ❤️ using Chatterbox & Edge-TTS")
+    gr.Markdown('---')
+    gr.Markdown('**नोट:** पहली बार क्लोनिंग करने में मॉडल डाउनलोड होने के कारण समय लग सकता है।')
 
-# ऐप लॉन्च करें
 if __name__ == "__main__":
     demo.launch(share=True, debug=True)
