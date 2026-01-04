@@ -25,9 +25,7 @@
 
 1. **रिपॉजिटरी क्लोन करें:**
    ```bash
-   git clone [https://github.com/shriran/व](https://github.com/shriran/व)ॉइसबैचस्टूडियो.git
-   cd वॉइसबैचस्टूडियो
-
+   git clone https://github.com/shriran/voicebatchstudio.git
 
 
    जरूरी लाइब्रेरी इंस्टॉल करें:
