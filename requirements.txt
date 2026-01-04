@@ -13,3 +13,4 @@ sentencepiece
 accelerate
 numpy
 scipy
+pip install chatterbox-tts
