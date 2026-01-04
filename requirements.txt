@@ -18,3 +18,16 @@ safetensors
 huggingface_hub
 einops
 pykakasi
+torch
+gradio
+edge-tts
+librosa
+soundfile
+safetensors
+huggingface_hub
+einops
+pykakasi
+numpy
+scipy
+dicta-onnx
+spacy-pkuseg
