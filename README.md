@@ -4,7 +4,7 @@
 
 वॉइसबैचस्टूडियो एक शक्तिशाली और पूरी तरह से **मुफ्त (Free)** AI वॉइस क्लोनिंग और टेक्स्ट-टू-स्पीच (TTS) प्लेटफॉर्म है। यह प्रोजेक्ट उन लोगों के लिए बनाया गया है जो बिना किसी फीस के प्रोफेशनल क्वालिटी की AI आवाज़ें बनाना चाहते हैं।
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shriran/वॉइसबैचस्टूडियो/blob/main/VoiceBatch_Studio_Colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shriramnag/voicebatchstudio/blob/main/VoiceBatch_Studio_Colab.ipynb)
 
 ---
 
@@ -25,13 +25,18 @@
 
 1. **रिपॉजिटरी क्लोन करें:**
    ```bash
-   git clone https://github.com/shriran/voicebatchstudio.git
+   git clone [https://github.com/shriramnag/voicebatchstudio.git](https://github.com/shriramnag/voicebatchstudio.git)
+   cd voicebatchstudio
+
+
 
 
    जरूरी लाइब्रेरी इंस्टॉल करें:
 
-   pip install -r requirements.txt
+
+pip install -r requirements.txt
 pip install edge-tts gradio
+
 
 
 
@@ -39,7 +44,6 @@ pip install edge-tts gradio
 
 
 python app.py
-
 
 
 🚀 Google Colab पर कैसे चलाएं?
@@ -61,5 +65,6 @@ requirements.txt: ज़रूरी पायथन लाइब्रेरी
 📜 लाइसेंस (License)
 यह प्रोजेक्ट MIT License के अंतर्गत आता है - यानी यह हमेशा के लिए फ्री है।
 
-Built with ❤️ by Shriram nag 
+Built with ❤️ by shriramnag
+   
 
