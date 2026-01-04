@@ -8,8 +8,8 @@ huggingface_hub
 einops
 pykakasi
 pyloudnorm
-numpy
-scipy
 transformers
 sentencepiece
 accelerate
+numpy
+scipy
