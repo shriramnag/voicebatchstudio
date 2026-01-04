@@ -1,14 +1,3 @@
-edge-tts
-gTTS
-TTS
-langid
-shutil
-# Chatterbox की पुरानी लाइब्रेरीज़ भी रहने दें
-resemble-perth
-s3tokenizer
-omegaconf
-pydub
-gradio
 torch
 gradio
 edge-tts
@@ -18,16 +7,9 @@ safetensors
 huggingface_hub
 einops
 pykakasi
-torch
-gradio
-edge-tts
-librosa
-soundfile
-safetensors
-huggingface_hub
-einops
-pykakasi
+pyloudnorm
 numpy
 scipy
-dicta-onnx
-spacy-pkuseg
+transformers
+sentencepiece
+accelerate
