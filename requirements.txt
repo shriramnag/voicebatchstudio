@@ -9,3 +9,12 @@ s3tokenizer
 omegaconf
 pydub
 gradio
+torch
+gradio
+edge-tts
+librosa
+soundfile
+safetensors
+huggingface_hub
+einops
+pykakasi
