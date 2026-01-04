@@ -22,17 +22,17 @@
 ## 🛠️ इंस्टॉलेशन (Installation)
 
 अगर आप इसे अपने कंप्यूटर (Local PC) पर चलाना चाहते हैं, तो इन कमांड्स का उपयोग करें:
-
-1. **रिपॉजिटरी क्लोन करें:**
-   ```bash
-   git clone [https://github.com/shriramnag/voicebatchstudio.git](https://github.com/shriramnag/voicebatchstudio.git)
-   cd voicebatchstudio
-
+### 1. रिपॉजिटरी क्लोन करें:
+```bash
+git clone [https://github.com/shriramnag/voicebatchstudio.git](https://github.com/shriramnag/voicebatchstudio.git)
+cd voicebatchstudio
 
 
+   
 
-   जरूरी लाइब्रेरी इंस्टॉल करें:
 
+
+2.जरूरी लाइब्रेरी इंस्टॉल करें:
 
 pip install -r requirements.txt
 pip install edge-tts gradio
@@ -40,10 +40,13 @@ pip install edge-tts gradio
 
 
 
-ऐप शुरू करें:
+3. ऐप शुरू करें:
 
 
 python app.py
+
+
+
 
 
 🚀 Google Colab पर कैसे चलाएं?
@@ -55,12 +58,19 @@ python app.py
 
 सेल को 'Run' करें और आपको एक gradio.live लिंक मिलेगा।
 
+
+
+
+
 📁 प्रोजेक्ट स्ट्रक्चर (Project Structure)
 app.py: मुख्य इंटरफ़ेस और ऐप का कोड।
 
 src/voicebatchstudio/: AI मॉडल और प्रोसेसिंग इंजन।
 
 requirements.txt: ज़रूरी पायथन लाइब्रेरीज़ की लिस्ट।
+
+
+
 
 📜 लाइसेंस (License)
 यह प्रोजेक्ट MIT License के अंतर्गत आता है - यानी यह हमेशा के लिए फ्री है।
